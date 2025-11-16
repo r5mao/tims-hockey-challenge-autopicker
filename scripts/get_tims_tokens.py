@@ -70,6 +70,22 @@ def run():
                                     tokens['CLIENT_ID'] = post[idx:idx+200]
                     except Exception:
                         pass
+                # Tim Hortons GraphQL endpoint contains `thLegacyCognitoId` under data->me->thLegacyCognitoId
+                if 'use1-prod-th-gateway.rbictg.com/graphql' in url and not tokens.get('USER_ID'):
+                    try:
+                        body = response.json()
+                        # Drill into nested keys safely
+                        u = None
+                        if isinstance(body, dict):
+                            data = body.get('data')
+                            if isinstance(data, dict):
+                                me = data.get('me')
+                                if isinstance(me, dict) and 'thLegacyCognitoId' in me:
+                                    u = me.get('thLegacyCognitoId')
+                        if u:
+                            tokens['USER_ID'] = u
+                    except Exception:
+                        pass
             except Exception:
                 # Catch any unexpected errors in the response handler to avoid crashing
                 pass
@@ -88,23 +104,6 @@ def run():
         try:
             ua = page.evaluate('navigator.userAgent')
             tokens.setdefault('USER_AGENT', ua)
-        except Exception:
-            pass
-
-        # Try to get USER_ID from localStorage (thLegacyCognitoId or similar)
-        try:
-            # Check a few possible keys commonly used
-            keys = page.evaluate('Object.keys(window.localStorage)')
-            uid = None
-            for k in keys:
-                if 'thLegacyCognitoId' in k or 'thLegacy' in k or 'cognito' in k.lower():
-                    uid = page.evaluate(f"window.localStorage.getItem('{k}')")
-                    break
-            # Fallback: try explicit key
-            if uid is None:
-                uid = page.evaluate("window.localStorage.getItem('thLegacyCognitoId')")
-            if uid:
-                tokens.setdefault('USER_ID', uid)
         except Exception:
             pass
 
