@@ -29,7 +29,15 @@ This code automates the daily player submissions using a ranking system based on
 
 ### Install dependencies
 1. Install [Python3](https://www.python.org/downloads/).
-2. Install the required dependencies: `pip install -r requirements.txt`.
+2. Create and activate a virtual environment (recommended):
+   ```
+   python -m venv venv
+   # On Windows:
+   venv\Scripts\activate
+   # On Mac/Linux:
+   source venv/bin/activate
+   ```
+2. Install the required dependencies: `pip install -r requirements.txt`. If you run into issues here, just pip install latest versions of each library, should be fine.
 3. Run `python autopicker/main.py` to start automatic player submissions.
 4. For test run, `python autopicker/main.py -t=True`
 
