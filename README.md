@@ -27,6 +27,13 @@ This code automates the daily player submissions using a ranking system based on
     USER_ID=___
     ```
 
+### Install dependencies
+1. Install [Python3](https://www.python.org/downloads/).
+2. Install the required dependencies: `pip install -r requirements.txt`.
+3. Run `python autopicker/main.py` to start automatic player submissions.
+4. For test run, `python autopicker/main.py -t=True`
+
+
 ## Scheduling (for Windows)
 1. Open *Task Scheduler* and select *Create Task*.
 2. Under the *Security options* in the *General* tab, select the option *Run whether user is logged on or not* and check the *Hidden* box.
