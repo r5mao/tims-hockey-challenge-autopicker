@@ -8,31 +8,24 @@ This code automates the daily player submissions using a ranking system based on
 - https://github.com/peruukki/nhl-score-api
 
 ## Setup
-### Obtain Tim Hortons app account details (Android devices)
-The Tim Hortons app does not have a public API. Therefore, you will need to remote debug your android device to obtain your account's refresh token and client ID:
-1. Setup remote debugging by following these [instructions](https://developer.chrome.com/docs/devtools/remote-debugging/).
-2. Once your phone is connected, open the Tim Hortons app on your phone and inspect the respective tab on your computer, which should open a DevTools window. Install the Tim Hortons app if you haven't already.
-3. Sign out of the app if you aren't already.
-4. Watch the list of network activity names in the *Network* tab in the DevTools window as you sign into the app. 
+### Obtain Tim Hortons app account details (from browser, don't need phone)
+1. Go to https://www.timhortons.ca/account
+2. Open Developer Tools in browser
+3. Go to Network tab
+4. Login Tim Hortons and enter one-time code from email
+5. Watch the list of network activity names in the *Network* tab in the DevTools window as you sign into the app. 
    ![My Image](assets/network_activity_1.png)
    Filter for *"cognito"* and open the first `cognito-idp.us-east-1.amazonaws.com` activity and record the following values:
     - `user-agent` (found in the *Headers* tab)
     - `ClientId` (found in the *Payload* tab)
     - `RefreshToken` (found in the *Preview* or *Response* tab)
-    
-    Then use the search function (ctrl+f) to search for `thLegacyCognitoId` and record the value as `USER_ID`.
-5. Create a `.env` file in the root directory of this repo and insert the values you found like so:
+6. Create a `.env` file in the root directory of this repo and insert the values you found like so:
     ```
     USER_AGENT=___
     CLIENT_ID=___
     REFRESH_TOKEN=___
     USER_ID=___
     ```
-6. Enter the Tims Hockey Challenge and complete the setup if you haven't already done so (may include a simple math question and contest display name prompt).
-### Install dependencies
-1. Install [Python3](https://www.python.org/downloads/).
-2. Install the required dependencies: `pip install -r requirements.txt`.
-3. Run `python autopicker/main.py` to start automatic player submissions.
 
 ## Scheduling (for Windows)
 1. Open *Task Scheduler* and select *Create Task*.
