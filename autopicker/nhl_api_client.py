@@ -13,7 +13,15 @@ project_path = Path(__file__).parent.parent
 
 logger = logging.getLogger(__name__)
 
-SEASON='20242025'
+# Compute NHL season string dynamically so the code works across season boundaries.
+# Format used elsewhere in the code is YYYYYYYY (e.g. '20242025').
+now = datetime.now()
+# NHL seasons typically start in the fall (around Oct). Use July as a safe cutoff.
+if now.month >= 7:
+    start_year = now.year
+else:
+    start_year = now.year - 1
+SEASON = f"{start_year}{start_year + 1}"
 
 class NHLApiClient:
     def __init__(self):
