@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import argparse
+from datetime import datetime
 
 
 
@@ -70,6 +71,16 @@ def main() -> None:
         logger.info('No contest right now')
         logger.info('Exiting...')
         return
+
+    # Save a snapshot of the games and player data for historical backtesting
+    try:
+        contest_date = datetime.now().strftime('%Y-%m-%d')
+        snapshot_path = f'{log_path}/games_{contest_date}.json'
+        with open(snapshot_path, 'w', encoding='utf-8') as sf:
+            json.dump(games_and_player_data, sf, indent=2)
+        logger.info(f'Saved games snapshot to {snapshot_path}')
+    except Exception:
+        logger.exception('Failed to save games snapshot')
 
     games = games_and_player_data.get('games')
     picks = games_and_player_data.get('picks')

@@ -2,6 +2,7 @@ import requests
 from requests.exceptions import HTTPError
 import json
 import logging
+import time
 from utils.logger_utils import log_http_error
 from datetime import datetime, timedelta
 from collections import Counter
@@ -120,3 +121,76 @@ class NHLApiClient:
                         goal_scorers.append(goal['scorer']['player'])
         logger.debug('Obtained list of recent goal scorers')
         return Counter(goal_scorers)
+
+    # --- New methods for historical data / backtesting ---
+    def get_schedule_for_date(self, date_str: str) -> List[Dict[str, Any]]:
+        """Return NHL schedule for a given date (YYYY-MM-DD) using the public statsapi."""
+        url = f'https://api-web.nhle.com/v1/schedule/{date_str}'
+        for attempt in range(1, 4):
+            try:
+                response = requests.get(url, timeout=10)
+                response.raise_for_status()
+                data = response.json()
+                # Normalize response: prefer 'dates' list, otherwise return list or wrap single dict
+                if isinstance(data, dict) and 'dates' in data:
+                    return data.get('dates', [])
+                if isinstance(data, list):
+                    return data
+                return [data]
+            except HTTPError as http_err:
+                error_msg = f'HTTP error occurred when trying to obtain schedule for {date_str} (attempt {attempt})'
+                log_http_error(error_msg, logger, response, http_err)
+                return []
+            except requests.exceptions.RequestException as req_err:
+                logger.warning(f'Network error when fetching schedule for {date_str} (attempt {attempt}): {req_err}')
+                if attempt < 3:
+                    time.sleep(2 ** (attempt - 1))
+                    continue
+                return []
+
+    def get_game_boxscore(self, game_id: int) -> Dict[str, Any]:
+        """Return boxscore JSON for a given game_id."""
+        # New NHL API base for boxscore
+        url = f'https://api-web.nhle.com/v1/gamecenter/{game_id}/boxscore'
+        for attempt in range(1, 4):
+            try:
+                response = requests.get(url, timeout=10)
+                response.raise_for_status()
+                return response.json()
+            except HTTPError as http_err:
+                error_msg = f'HTTP error occurred when trying to obtain boxscore for game {game_pk} (attempt {attempt})'
+                log_http_error(error_msg, logger, response, http_err)
+                return {}
+            except requests.exceptions.RequestException as req_err:
+                logger.warning(f'Network error when fetching boxscore for game {game_pk} (attempt {attempt}): {req_err}')
+                if attempt < 3:
+                    time.sleep(2 ** (attempt - 1))
+                    continue
+                return {}
+
+    def get_players_in_game(self, game_pk: int) -> List[Dict[str, Any]]:
+        """Return a list of players who appear in the boxscore for the game (skaters only)."""
+        box = self.get_game_boxscore(game_pk)
+        players = []
+        try:
+            teams = box.get('teams', {})
+            for side in ['away', 'home']:
+                team = teams.get(side, {})
+                team_abbrev = team.get('team', {}).get('abbreviation')
+                for pid, pdata in team.get('players', {}).items():
+                    person = pdata.get('person', {})
+                    stats = pdata.get('stats', {})
+                    # only include skaters with skaterStats
+                    if 'skaterStats' in stats:
+                        player_entry = {
+                            'id': person.get('id'),
+                            'fullName': person.get('fullName'),
+                            'jerseyNumber': person.get('jerseyNumber'),
+                            'position': person.get('primaryPosition', {}).get('code'),
+                            'teamAbbrev': team_abbrev,
+                            'gameStats': stats.get('skaterStats', {})
+                        }
+                        players.append(player_entry)
+        except Exception as e:
+            logger.error(f'Error parsing boxscore players for game {game_pk}: {e}')
+        return players
