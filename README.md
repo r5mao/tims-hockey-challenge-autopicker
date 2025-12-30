@@ -38,9 +38,10 @@ This code automates the daily player submissions using a ranking system based on
    source venv/bin/activate
    ```
 2. Install the required dependencies: `pip install -r requirements.txt`. If you run into issues here, just pip install latest versions of each library, should be fine.
-3. Run `python .\scripts\get_tims_tokens.py` which will open Tim Horton's login page. Login and this will automatically retrieve and fill in token data to .env.
-4. Run `python autopicker/main.py` to start automatic player submissions.
-5. For test run, `python autopicker/main.py -t=True`
+3. Run `playwright install` which allows opening browser window. Used for open Tim Horton's login page to extract token data.
+4. Run `python .\scripts\get_tims_tokens.py` which will open Tim Horton's login page. Login and this will automatically retrieve and fill in token data to .env.
+5. Run `python autopicker/main.py` to start automatic player submissions.
+6. For test run, `python autopicker/main.py -t=True`
 
 
 ## Scheduling (for Windows)
